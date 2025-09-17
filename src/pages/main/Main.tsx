@@ -7,6 +7,7 @@ import { getImagenes } from "../../api/imagen.api";
 import { getTextos } from "../../api/texto.api";
 import type { Imagen } from "../../types/Imagen";
 import type { TextoConId } from "../../types/Texto";
+import escudoClub from "../../assets/escudo-club.png"
 
 type Socio = {
   dni: string;
@@ -20,16 +21,15 @@ type ResultadoSocio = {
   estado: string;
 };
 
-interface SocioResponse {
-  status: "ok" | "error"; // si solo puede ser "ok", dejalo como "ok"
-  data: {
-    num_socio: string;
-    nombre: string;
-    estado_socio: string; // si en realidad es numérico, usar number
-    fecha_estado: string; // podés usar Date si lo parseás
-  };
-}
-
+// interface SocioResponse {
+//   status: "ok" | "error"; // si solo puede ser "ok", dejalo como "ok"
+//   data: {
+//     num_socio: string;
+//     nombre: string;
+//     estado_socio: string; // si en realidad es numérico, usar number
+//     fecha_estado: string; // podés usar Date si lo parseás
+//   };
+// }
 
 const Main = () => {
   const socketUrl = import.meta.env.VITE_SOCKET_URL
@@ -38,15 +38,25 @@ const Main = () => {
   const [fotoVisible, setFotoVisible] = useState(false);
   const [imagenes, setImagenes] = useState<Imagen[]>([])
   const [textos, setTextos] = useState<TextoConId[]>([])
-  const [socio, setSocio] = useState<SocioResponse>(null);
+  // const [socio, setSocio] = useState<SocioResponse>(null);
   const activeTimeouts = useRef<number>(0);
 
    useEffect(() => {
       const fechData = async () => {
         try {
           const data = await getTextos()
-          setTextos(data)
-          console.log("🚀 ~ ImgCarusell ~ data:", data)
+          if (data?.length > 0) {
+            setTextos(data)
+          }else{
+            setTextos([{
+              id: 0,
+              contenido: 'BIENVENIDO',
+              orden: '0',
+              activo: true
+            }])
+          }
+          console.log("🚀 ~ fechData ~ data:", data)
+          // setTextos(data)
         } catch (error) {
           console.log("🚀 ~ ImgCarusell ~ error:", error)
         }
@@ -56,15 +66,25 @@ const Main = () => {
 
   useEffect(() => {
     const fechData = async () => {
-      try {
-        const data = await getImagenes()
-        setImagenes(data)
-        console.log("🚀 ~ ImgCarusell ~ data:", data)
-      } catch (error) {
-        console.log("🚀 ~ ImgCarusell ~ error:", error)
+    const urlImages = import.meta.env.VITE_URL_IMAGES
+      const data = await getImagenes();
+      if (data?.length > 0) {
+        const imagenesConUrl = data.map((img: Imagen) => ({
+          ...img,
+          url: `${urlImages}${img.url}`,  // <- concateno acá
+        }));
+        setImagenes(imagenesConUrl);
+      } else {
+        setImagenes([{
+          id: 0,
+          url: escudoClub,
+          titulo: "Echague",
+          descripcion: "Logo del club Echague",
+          activa: true,
+          orden: 0,
+        }]);
       }
-    }
-
+    };
     fechData()
   }, [])
 
@@ -72,17 +92,18 @@ const Main = () => {
     const socket = io(socketUrl, {
     transports: ["websocket"] // opcional, para evitar polling
   });
-    socket.on("scanner-entrada", (data: ResultadoSocio) => {
-      console.log("🚀 ~ ControlAcceso2 ~ data:", data)
-      const { dni, socio, estado: estadoMsg } = data;
-      console.log("🚀 ~ Main ~ dni:", dni)
-      setEstado(`${estadoMsg} (${dni}) ENTRADA`);
+    socket.on("scanner-entrada", ({ mensaje, data }) => {
+      setEstado(`${mensaje} ${JSON.stringify(data)}`);
+      // console.log("🚀 ~ ControlAcceso2 ~ data:", data)
+      // const { dni, socio, estado: estadoMsg } = data;
+      // console.log("🚀 ~ Main ~ dni:", dni)
+      // setEstado(`${estadoMsg} (${dni}) ENTRADA`);
       setViewInfoSocio(true);
-      if (socio && socio.dni === dni) {
-        setFotoVisible(true);
-      } else {
-        setFotoVisible(false);
-      }
+      // if (socio && socio.dni === dni) {
+      //   setFotoVisible(true);
+      // } else {
+      //   setFotoVisible(false);
+      // }
       activeTimeouts.current += 1; // contador de mensajes activos
       const timeout = setTimeout(() => {
         activeTimeouts.current -= 1;
@@ -124,17 +145,12 @@ const Main = () => {
     <>
         { !viewInfoSocio &&
           <>
-          <ImgCarusell imagenes={imagenes}/>
-          { textos.length > 0 && <TextCarrusel textos={textos} />}
+            <ImgCarusell imagenes={imagenes}/>
+            <TextCarrusel textos={textos} />
           </>
         }
-
         { viewInfoSocio &&
           <InfoSocio estado={estado} fotoVisible={fotoVisible}/>
-          // <div className="info-socio">
-          //   <p>{estado}</p>
-          //   {fotoVisible && <img src="/img/foto.jpg" alt="Foto socio" />}
-          // </div>
         }
     </>
   )

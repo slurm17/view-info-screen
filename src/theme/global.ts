@@ -48,6 +48,7 @@ export const theme = createTheme({
         main: {
           width: '100%',
           maxHeight: '100dvh',
+          height: '100dvh',
           display: 'flex',
           justifyContent: 'center',
           flexDirection: 'column',

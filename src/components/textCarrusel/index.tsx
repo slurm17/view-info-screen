@@ -1,6 +1,7 @@
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import { Textfit } from "react-textfit";
 
 // Import Swiper styles
 import 'swiper/css';
@@ -8,7 +9,6 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
 import './txtCarr.css'
-import { Typography } from '@mui/material';
 import type { TextoConId } from '../../types/Texto';
 
 const TextCarrusel = ({ textos }: { textos: TextoConId[]}) => {
@@ -29,14 +29,24 @@ const TextCarrusel = ({ textos }: { textos: TextoConId[]}) => {
           modules={[Autoplay, Pagination, Navigation]}
         //   className="mySwiper"
         >
-          {
-            textos.map((txt) => (
-              <SwiperSlide key={txt.id}>
-                <Typography 
-                  variant="h2"
+          {textos.map((txt) => (
+              <SwiperSlide 
+                style={{
+                  backgroundColor: '#fff', 
+                  textAlign: 'center',
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }} 
+                key={txt.id}
+              >
+                <Textfit 
+                  mode="multi" 
+                  style={{ width: "100%", height: "100%" }}
+                  forceSingleModeWidth={false}
                 >
                   {txt.contenido}
-                </Typography>
+                </Textfit>
               </SwiperSlide>
             ))
           }
