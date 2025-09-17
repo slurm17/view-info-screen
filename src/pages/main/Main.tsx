@@ -8,6 +8,7 @@ import { getTextos } from "../../api/texto.api";
 import type { Imagen } from "../../types/Imagen";
 import type { TextoConId } from "../../types/Texto";
 import escudoClub from "../../assets/escudo-club.png"
+import { getConfig } from "../../api/config.api";
 
 type Socio = {
   dni: string;
@@ -34,12 +35,34 @@ type ResultadoSocio = {
 const Main = () => {
   const socketUrl = import.meta.env.VITE_SOCKET_URL
   const [viewInfoSocio, setViewInfoSocio] = useState(false)
-  const [estado, setEstado] = useState("Esperando...");
+  // const [estado, setEstado] = useState("Esperando...");
+  // const [estado, setEstado] = useState("Esperando lectura de DNI o código QR...");
+  const [datos, setDatos] = useState({
+    dni: "",
+    nombre: "",
+    nroSocio: "",
+    mensaje: ''
+  });
   const [fotoVisible, setFotoVisible] = useState(false);
   const [imagenes, setImagenes] = useState<Imagen[]>([])
   const [textos, setTextos] = useState<TextoConId[]>([])
+  const [segundos, setSegundos] = useState(0)
   // const [socio, setSocio] = useState<SocioResponse>(null);
   const activeTimeouts = useRef<number>(0);
+
+  useEffect(() => {
+    const fechData = async () => {
+      try {
+        const data = await getConfig()
+        setSegundos(data.duracion_img_seg * 1000)
+        console.log("🚀 ~ fechData ~ data:", data)
+      } catch (error) {
+        console.log("🚀 ~ fechData ~ error:", error)
+      }
+    }
+    fechData()
+  }, [datos])
+  
 
    useEffect(() => {
       const fechData = async () => {
@@ -62,7 +85,7 @@ const Main = () => {
         }
       }
       fechData()
-    }, [])
+    }, [datos])
 
   useEffect(() => {
     const fechData = async () => {
@@ -86,14 +109,20 @@ const Main = () => {
       }
     };
     fechData()
-  }, [])
+  }, [datos])
 
   useEffect(() => {
     const socket = io(socketUrl, {
     transports: ["websocket"] // opcional, para evitar polling
   });
-    socket.on("scanner-entrada", ({ mensaje, data }) => {
-      setEstado(`${mensaje} ${JSON.stringify(data)}`);
+    socket.on("scanner-entrada", ({ mensaje, datos_socio }) => {
+      setDatos({
+        dni: datos_socio?.dni,
+        nombre: datos_socio?.nombre,
+        nroSocio: datos_socio?.num_socio,
+        mensaje : mensaje
+      })
+      // setEstado(`${mensaje} ${JSON.stringify(data)}`);
       // console.log("🚀 ~ ControlAcceso2 ~ data:", data)
       // const { dni, socio, estado: estadoMsg } = data;
       // console.log("🚀 ~ Main ~ dni:", dni)
@@ -118,7 +147,7 @@ const Main = () => {
       console.log("🚀 ~ ControlAcceso2 ~ data:", data)
       const { dni, socio, estado: estadoMsg } = data;
       console.log("🚀 ~ Main ~ dni:", dni)
-      setEstado(`${estadoMsg} (${dni}) SALIDA`);
+      // setEstado(`${estadoMsg} (${dni}) SALIDA`);
       setViewInfoSocio(true);
       if (socio && socio.dni === dni) {
         setFotoVisible(true);
@@ -145,12 +174,12 @@ const Main = () => {
     <>
         { !viewInfoSocio &&
           <>
-            <ImgCarusell imagenes={imagenes}/>
-            <TextCarrusel textos={textos} />
+            <ImgCarusell segundos={segundos} imagenes={imagenes}/>
+            <TextCarrusel segundos={segundos} textos={textos} />
           </>
         }
         { viewInfoSocio &&
-          <InfoSocio estado={estado} fotoVisible={fotoVisible}/>
+          <InfoSocio datos={datos} fotoVisible={fotoVisible}/>
         }
     </>
   )

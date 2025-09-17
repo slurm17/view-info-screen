@@ -11,15 +11,15 @@ import 'swiper/css/navigation';
 import './txtCarr.css'
 import type { TextoConId } from '../../types/Texto';
 
-const TextCarrusel = ({ textos }: { textos: TextoConId[]}) => {
-  const delay = import.meta.env.VITE_TIME_DELAY
+const TextCarrusel = ({ textos, segundos }: { textos: TextoConId[], segundos: number}) => {
+  // const delay = import.meta.env.VITE_TIME_DELAY
   return (
     <Swiper
           className="mySwiper mySwiperTxt"
           spaceBetween={30}
           centeredSlides={true}
           autoplay={{
-            delay: delay,
+            delay: segundos,
             // disableOnInteraction: true,
           }}
           // pagination={{

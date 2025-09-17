@@ -9,8 +9,8 @@ import 'swiper/css/navigation';
 import './imgCarr.css'
 import type { Imagen } from '../../types/Imagen';
 
-const ImgCarusell = ({ imagenes }: { imagenes: Imagen[]}) => {
-  const delay = import.meta.env.VITE_TIME_DELAY
+const ImgCarusell = ({ imagenes, segundos }: { imagenes: Imagen[], segundos: number}) => {
+  // const delay = import.meta.env.VITE_TIME_DELAY
   
   return (
     <>
@@ -18,7 +18,7 @@ const ImgCarusell = ({ imagenes }: { imagenes: Imagen[]}) => {
           spaceBetween={30}
           centeredSlides={true}
           autoplay={{
-            delay: delay,
+            delay: segundos,
             // disableOnInteraction: true,
           }}
           // pagination={{
