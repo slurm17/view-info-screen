@@ -6,7 +6,7 @@ const bktValues = {
   lg: 1280,
   xl: 1920
 }
-const colorPrimaryMain = '#8413ee'
+const colorPrimaryMain = '#7FA1CF'
 const colorSecondaryMain = '#B913EE'
 export const theme = createTheme({
   palette: {

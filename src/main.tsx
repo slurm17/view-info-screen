@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { theme } from './theme/global.ts'
+import '@fontsource/michroma'
 // HACER SIEMPRE EL BUILD CON CMD ADMINISTRADOR PARA EVITAR PROBLEMAS DE PERMISOS
 
 // fetch('http://localhost:3000/api/hello')

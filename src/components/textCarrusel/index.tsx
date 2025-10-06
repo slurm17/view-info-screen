@@ -12,6 +12,7 @@ import './txtCarr.css'
 import type { TextoConId } from '../../types/Texto';
 
 const TextCarrusel = ({ textos, segundos }: { textos: TextoConId[], segundos: number}) => {
+
   // const delay = import.meta.env.VITE_TIME_DELAY
   return (
     <Swiper
@@ -42,7 +43,7 @@ const TextCarrusel = ({ textos, segundos }: { textos: TextoConId[], segundos: nu
               >
                 <Textfit 
                   mode="multi" 
-                  style={{ width: "100%", height: "100%" }}
+                  style={{ width: "100%", height: "100%", display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   forceSingleModeWidth={false}
                 >
                   {txt.contenido}

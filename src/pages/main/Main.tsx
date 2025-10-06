@@ -10,18 +10,16 @@ import type { TextoConId } from "../../types/Texto";
 import escudoClub from "../../assets/escudo-club.png"
 import { getConfig } from "../../api/config.api";
 
-type Socio = {
-  dni: string;
-  nombre?: string;
-  apellido?: string;
-};
-
-type ResultadoSocio = {
-  dni: string;
-  socio?: Socio;
-  estado: string;
-};
-
+// type Socio = {
+//   dni: string;
+//   nombre?: string;
+//   apellido?: string;
+// };
+// type ResultadoSocio = {
+//   dni: string;
+//   socio?: Socio;
+//   estado: string;
+// };
 // interface SocioResponse {
 //   status: "ok" | "error"; // si solo puede ser "ok", dejalo como "ok"
 //   data: {
@@ -35,19 +33,21 @@ type ResultadoSocio = {
 const Main = () => {
   const socketUrl = import.meta.env.VITE_SOCKET_URL
   const [viewInfoSocio, setViewInfoSocio] = useState(false)
-  // const [estado, setEstado] = useState("Esperando...");
-  // const [estado, setEstado] = useState("Esperando lectura de DNI o código QR...");
+  const urlImageSocio = import.meta.env.VITE_URL_IMAGES
   const [datos, setDatos] = useState({
+    // dni: "39256873",
+    // nombre: "LUCAS ALEJANDRO FERNANDEZ",
+    // nroSocio: "33545",
+    // mensaje: 'BIENVENIDO AL CLUB'
     dni: "",
     nombre: "",
     nroSocio: "",
     mensaje: ''
   });
-  const [fotoVisible, setFotoVisible] = useState(false);
   const [imagenes, setImagenes] = useState<Imagen[]>([])
   const [textos, setTextos] = useState<TextoConId[]>([])
   const [segundos, setSegundos] = useState(0)
-  // const [socio, setSocio] = useState<SocioResponse>(null);
+  const [src, setSrc] = useState<string | null>(null);
   const activeTimeouts = useRef<number>(0);
 
   useEffect(() => {
@@ -63,29 +63,28 @@ const Main = () => {
     fechData()
   }, [datos])
   
-
-   useEffect(() => {
-      const fechData = async () => {
-        try {
-          const data = await getTextos()
-          if (data?.length > 0) {
-            setTextos(data)
-          }else{
-            setTextos([{
-              id: 0,
-              contenido: 'BIENVENIDO',
-              orden: '0',
-              activo: true
-            }])
-          }
-          console.log("🚀 ~ fechData ~ data:", data)
-          // setTextos(data)
-        } catch (error) {
-          console.log("🚀 ~ ImgCarusell ~ error:", error)
+  useEffect(() => {
+    const fechData = async () => {
+      try {
+        const data = await getTextos()
+        if (data?.length > 0) {
+          setTextos(data)
+        }else{
+          setTextos([{
+            id: 0,
+            contenido: 'BIENVENIDO',
+            orden: '0',
+            activo: true
+          }])
         }
+        console.log("🚀 ~ fechData ~ data:", data)
+        // setTextos(data)
+      } catch (error) {
+        console.log("🚀 ~ ImgCarusell ~ error:", error)
       }
-      fechData()
-    }, [datos])
+    }
+    fechData()
+  }, [datos])
 
   useEffect(() => {
     const fechData = async () => {
@@ -122,47 +121,48 @@ const Main = () => {
         nroSocio: datos_socio?.num_socio,
         mensaje : mensaje
       })
-      // setEstado(`${mensaje} ${JSON.stringify(data)}`);
-      // console.log("🚀 ~ ControlAcceso2 ~ data:", data)
-      // const { dni, socio, estado: estadoMsg } = data;
-      // console.log("🚀 ~ Main ~ dni:", dni)
-      // setEstado(`${estadoMsg} (${dni}) ENTRADA`);
+      fetch(`${urlImageSocio}/fotos-socios/${datos_socio?.dni}.jpg`)
+      .then((res) => {
+        if (!res.ok) {
+          setSrc(null);
+          throw new Error("No existe imagen");
+        }
+        setSrc(res.url);
+      })
+      .catch((error) => console.error(error));
       setViewInfoSocio(true);
-      // if (socio && socio.dni === dni) {
-      //   setFotoVisible(true);
-      // } else {
-      //   setFotoVisible(false);
-      // }
       activeTimeouts.current += 1; // contador de mensajes activos
       const timeout = setTimeout(() => {
         activeTimeouts.current -= 1;
         if (activeTimeouts.current === 0) {
           setViewInfoSocio(false); // solo ocultar si no hay mensajes activos
         }
-      }, 3000);
-      return () => clearTimeout(timeout);
+      }, 3500);
+      return () => {
+        clearTimeout(timeout)
+      };
     });
 
-    socket.on("scanner-salida", (data: ResultadoSocio) => {
-      console.log("🚀 ~ ControlAcceso2 ~ data:", data)
-      const { dni, socio, estado: estadoMsg } = data;
-      console.log("🚀 ~ Main ~ dni:", dni)
-      // setEstado(`${estadoMsg} (${dni}) SALIDA`);
-      setViewInfoSocio(true);
-      if (socio && socio.dni === dni) {
-        setFotoVisible(true);
-      } else {
-        setFotoVisible(false);
-      }
-      activeTimeouts.current += 1; // contador de mensajes activos
-      const timeout = setTimeout(() => {
-        activeTimeouts.current -= 1;
-        if (activeTimeouts.current === 0) {
-          setViewInfoSocio(false); // solo ocultar si no hay mensajes activos
-        }
-      }, 3000);
-      return () => clearTimeout(timeout);
-    });
+    // socket.on("scanner-salida", (data: ResultadoSocio) => {
+    //   console.log("🚀 ~ ControlAcceso2 ~ data:", data)
+    //   const { dni, socio, estado: estadoMsg } = data;
+    //   console.log("🚀 ~ Main ~ dni:", dni)
+    //   // setEstado(`${estadoMsg} (${dni}) SALIDA`);
+    //   setViewInfoSocio(true);
+    //   if (socio && socio.dni === dni) {
+    //     setFotoVisible(true);
+    //   } else {
+    //     setFotoVisible(false);
+    //   }
+    //   activeTimeouts.current += 1; // contador de mensajes activos
+    //   const timeout = setTimeout(() => {
+    //     activeTimeouts.current -= 1;
+    //     if (activeTimeouts.current === 0) {
+    //       setViewInfoSocio(false); // solo ocultar si no hay mensajes activos
+    //     }
+    //   }, 3000);
+    //   return () => clearTimeout(timeout);
+    // });
 
   return () => {
     socket.disconnect();
@@ -179,8 +179,11 @@ const Main = () => {
           </>
         }
         { viewInfoSocio &&
-          <InfoSocio datos={datos} fotoVisible={fotoVisible}/>
-        }
+          <InfoSocio
+            datos={datos} 
+            foto={src}
+          />
+        } 
     </>
   )
 }
