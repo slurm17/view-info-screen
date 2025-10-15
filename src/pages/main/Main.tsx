@@ -80,6 +80,12 @@ const Main = () => {
         console.log("🚀 ~ fechData ~ data:", data)
         // setTextos(data)
       } catch (error) {
+        setTextos([{
+            id: 0,
+            contenido: '¡BIENVENIDO!',
+            orden: '0',
+            activo: true
+          }])
         console.log("🚀 ~ ImgCarusell ~ error:", error)
       }
     }
@@ -89,6 +95,7 @@ const Main = () => {
   useEffect(() => {
     const fechData = async () => {
     const urlImages = import.meta.env.VITE_URL_IMAGES
+    try {
       const data = await getImagenes();
       if (data?.length > 0) {
         const imagenesConUrl = data.map((img: Imagen) => ({
@@ -105,6 +112,17 @@ const Main = () => {
           activa: true,
           orden: 0,
         }]);
+      }
+      } catch (error) {
+        setImagenes([{
+          id: 0,
+          url: escudoClub,
+          titulo: "Echague",
+          descripcion: "Logo del club Echague",
+          activa: true,
+          orden: 0,
+        }]);
+        console.log("🚀 ~ fechData ~ error:", error)
       }
     };
     fechData()
